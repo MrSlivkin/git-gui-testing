@@ -1,0 +1,167 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.ComponentModel;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Data.Sql;
+using System.Data.SqlClient;
+using System.Data.Entity;
+using System.Data.SqlTypes;
+using HIVE.Database;
+namespace HIVE
+{
+    /// <summary>
+    /// Логика взаимодействия для MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        public Database.Entities connection = new Database.Entities();
+        public class ItemSort
+        {
+            public string DisplayName { get; set; }
+            public string PropertyName { get; set; }
+            public bool Ascending { get; set; }
+        }
+        
+
+        int window = 0;
+        //void Ray()
+        //{
+        //    var Types = connection.MaterialType(Name).ToList();
+        //}
+        //public List<Database.MaterialType> Types { get; set; }
+
+        public class ItemFilter
+        {
+            public string DisplayName { get; set; }
+            public string PropertyName { get; set; }
+            public string TypeName { get; set; }
+
+        }
+
+        public static ObservableCollection<ItemSort> ItemSorts { get; set; } = new ObservableCollection<ItemSort>()
+            {
+                new ItemSort(){DisplayName="А-Я", PropertyName="Name", Ascending=true},
+                new ItemSort(){DisplayName="Я-А", PropertyName="Name", Ascending=false},
+                new ItemSort(){DisplayName="Остаток по возрастанию", PropertyName="InStock", Ascending=true},
+                new ItemSort(){DisplayName="Остаток по убыванию", PropertyName="InStock", Ascending=false},
+                new ItemSort(){DisplayName="Стоимость по возрастанию", PropertyName="Price", Ascending=true},
+                new ItemSort(){DisplayName="Стоимость по убыванию", PropertyName="Price", Ascending=false}
+            };
+
+
+        
+
+
+
+        public static Entities Connection = new Entities();
+        public static ObservableCollection<Material> Materials { get; set; }
+        public static ObservableCollection<MaterialType> MaterialTypes { get; set; }
+        public static ObservableCollection <MaterialUnit> Units { get; set; }
+
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            Materials = new ObservableCollection<Material>();
+            Connection.Material.ToList().ForEach(material => Materials.Add(material));
+            MaterialTypes = new ObservableCollection<MaterialType>();
+            Connection.MaterialType.ToList().ForEach(MaterialType => MaterialTypes.Add(MaterialType));
+            MaterialTypes.Insert(0, new MaterialType()
+            {
+                Name = "Все типы"
+            });
+            Units = new ObservableCollection<MaterialUnit> (Connection.MaterialUnit.ToList());
+            DataContext =this;
+            
+        }
+
+        
+
+        private void cbsort(object sender, SelectionChangedEventArgs e)
+        {
+            var item = sort.SelectedItem as ItemSort;
+            var view = CollectionViewSource.GetDefaultView(zerg.ItemsSource);
+            var direction = item.Ascending ?
+                ListSortDirection.Ascending :
+                ListSortDirection.Descending;
+            view.SortDescriptions.Clear();
+            view.SortDescriptions.Add(new SortDescription(item.PropertyName, direction));
+        }
+
+
+        private void cbgroup(object sender, SelectionChangedEventArgs e)
+        {
+            
+            
+            MaterialType materialType = group.SelectedItem as MaterialType;
+            var view = CollectionViewSource.GetDefaultView(zerg.ItemsSource);
+
+            view.Filter = new Predicate<object>(o =>
+            {
+                if (materialType.Name == "Все типы") return true;
+                return (o as Material).Type == materialType.Name; 
+            });
+        }
+
+        public void Search(string substring)
+        {
+            ICollectionView view = CollectionViewSource.GetDefaultView(zerg.ItemsSource);
+            if (view == null) return;
+
+
+            int viewCounter = 0;
+            view.Filter = new Predicate<object>(obj =>
+            {
+                bool isView = ((Material)obj).Name.ToLower().Contains(substring.ToLower());
+                if(isView) viewCounter++;
+
+                return isView;
+            });
+        }
+
+
+       
+        
+        Edit edit = new Edit();
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+            edit.Show();
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+       
+
+        private void daaa(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
+        }
+
+        private void textchanged(object sender, TextChangedEventArgs e)
+        {
+            CollectionViewSource.GetDefaultView(zerg.ItemsSource).Refresh();
+        }
+    }
+}
+
+
+
+
+

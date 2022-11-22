@@ -1,0 +1,226 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.ComponentModel;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Data.Sql;
+using System.Data.SqlClient;
+using System.Data.Entity;
+using System.Data.SqlTypes;
+using HIVE.Database;
+namespace HIVE
+{
+    /// <summary>
+    /// Логика взаимодействия для Update_update_a.xaml
+    /// </summary>
+    public partial class Update_update_a : Page
+    {
+        public static Entities Connection = new Entities();
+        public static ObservableCollection<Material> Materials { get; set; }
+        public Update_update_a()
+        {
+            InitializeComponent();
+            Materials = new ObservableCollection<Material>();
+            Connection.Material.ToList().ForEach(material => Materials.Add(material)); 
+            DataContext = this;
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
+        
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+    }
+}
+
+
+<Page x:Class="HIVE.Update_update_a" FontSize="18" FontFamily="Eurostile"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:HIVE"
+      mc:Ignorable="d" 
+      d:DesignHeight="555" d:DesignWidth="808"
+      Title="Update_update_a">
+
+    <Grid Margin="0,0,0,-2">
+        <Button Grid.Column="2" Margin="10 10 10 10" Grid.Row="1" Height="50" VerticalAlignment="Bottom">Назад</Button>
+        <StackPanel Grid.Column="1" Grid.Row="1">
+            <Label>Название материала</Label>
+            <ComboBox Name="cbch" SelectedItem="{Binding Material.Name}" SelectionChanged="ComboBox_SelectionChanged"></ComboBox>
+            <Label>Тип материала</Label>
+            <ComboBox SelectedItem="{Binding NewMaterial.MaterialType}" Name="cbMaterialType" DisplayMemberPath= "Name"></ComboBox>
+            <Label>Цена</Label>
+            <TextBox Text="{Binding NewMaterial.Price}"></TextBox>
+            <Label>Количество на складе</Label>
+            <TextBox Text="{Binding NewMaterial.InStock}"></TextBox>
+            <Label>Минимальное количество</Label>
+            <TextBox Text="{Binding NewMaterial.MinCount}"></TextBox>
+            <Label>Количество в упаковке</Label>
+            <TextBox Text="{Binding NewMaterial.InPack}"></TextBox>
+            <Label>Единица измерения</Label>
+            <ComboBox DisplayMemberPath="Unit" SelectedItem="{Binding NewMaterial.MaterialUnit}" Name="cbUnit"></ComboBox>
+            <Label>Изображение</Label>
+            <Button Click="Button_Click_1">Выбрать</Button>
+            <Button Margin="0 10 0 0" Click="Button_Click">Создать</Button>
+
+        </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+    </Grid>
+</Page>
+
+
+using System;
+using Microsoft.Win32;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+namespace HIVE
+{
+    /// <summary>
+    /// Логика взаимодействия для Edit.xaml
+    /// </summary>
+    public partial class Edit : Window
+    {
+        public Database.Material NewMaterial { get; set; }
+        public Edit()
+        {
+            InitializeComponent();
+
+            cbMaterialType.SetBinding(ComboBox.ItemsSourceProperty, new Binding() { Source = MainWindow.MaterialTypes });
+            cbUnit.SetBinding(ComboBox.ItemsSourceProperty, new Binding() { Source = MainWindow.Units });
+
+            NewMaterial = new Database.Material();
+            DataContext = this;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+           MainWindow.Connection.Material.Add(NewMaterial);
+            int result= MainWindow.Connection.SaveChanges();
+            if (result!=0)
+            {
+
+                MainWindow.Materials.Add(NewMaterial);
+
+                NewMaterial = new Database.Material();
+                MessageBox.Show("ыыыыы");
+            }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Multiselect = false;
+            if(dialog.ShowDialog().Value == true)
+            {
+                NewMaterial.Image=dialog.FileName;
+            }
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            this.Visibility = Visibility.Hidden;
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            
+        }
+    }
+}
+
+
+<Window x:Class="HIVE.Edit" FontFamily="Eurostile" FontSize="18"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HIVE"
+        mc:Ignorable="d"
+        Title="Edit" Height="555" Width="808" WindowStyle="None">
+    <Grid Margin="0,0,0,-2">
+        <Button Grid.Column="2" Margin="10 10 10 10" Grid.Row="1" Height="50" VerticalAlignment="Bottom" Click="Button_Click_3">Редактировать</Button>
+        <StackPanel Grid.Column="1" Grid.Row="1">
+            <Label>Название материала</Label>
+            <TextBox Text="{Binding NewMaterial.Name}" ></TextBox>
+            <Label>Тип материала</Label>
+            <ComboBox SelectedItem="{Binding NewMaterial.MaterialType}" Name="cbMaterialType" DisplayMemberPath= "Name"></ComboBox>
+            <Label>Цена</Label>
+            <TextBox Text="{Binding NewMaterial.Price}"></TextBox>
+            <Label>Количество на складе</Label>
+            <TextBox Text="{Binding NewMaterial.InStock}"></TextBox>
+            <Label>Минимальное количество</Label>
+            <TextBox Text="{Binding NewMaterial.MinCount}"></TextBox>
+            <Label>Количество в упаковке</Label>
+            <TextBox Text="{Binding NewMaterial.InPack}"></TextBox>
+            <Label>Единица измерения</Label>
+            <ComboBox DisplayMemberPath="Unit" SelectedItem="{Binding NewMaterial.MaterialUnit}" Name="cbUnit"></ComboBox>
+            <Label>Изображение</Label>
+            <Button Click="Button_Click_1">Выбрать</Button>
+            <Button Margin="0 10 0 0" Click="Button_Click">Создать</Button>
+
+        </StackPanel>
+        <Button Grid.Column="2" Content="X" HorizontalAlignment="Left" Margin="211,-1,0,8" Width="33" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Click="Button_Click_2" Background="#FFFD5959"/>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+    </Grid>
+</Window>
+
+
+ public string Image { 
+            get 
+            { if(image == null)
+                { return "images/picture.png"; }
+                else return image; 
+            } 
+            set => image = value; }
